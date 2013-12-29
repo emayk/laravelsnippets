@@ -51,6 +51,21 @@ Log::useDailyFiles(storage_path().'/logs/'.$logFile);
 App::error(function(Exception $exception, $code)
 {
 	Log::error($exception);
+
+    if (App::environment() === 'production') {
+
+        $client = new Raven_Client(Config::get('app.sentryDsn'));
+
+        $error_handler = new Raven_ErrorHandler($client);
+
+        // provide feedback to user
+        echo 'Something went wrong!';
+
+        // Register error handler callbacks
+        set_error_handler(array($error_handler, 'handleError'));
+        set_exception_handler(array($error_handler, 'handleException'));
+    }
+
 });
 
 /*
